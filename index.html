@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<title>🌸 แบบฝึกเรียงประโยคภาษาจีน 🌸</title>
+<style>
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Kanit", "Noto Sans Thai", "Segoe UI", sans-serif;
+    background: linear-gradient(135deg,#ffe6f0 0%,#fff0e6 40%,#e6f7ff 100%);
+    min-height: 100vh;
+    padding: 24px 12px;
+    display: flex;
+    justify-content: center;
+  }
+  .wrap { max-width: 720px; width: 100%; }
+  h1 {
+    text-align:center;
+    color:#e8598a;
+    font-size: 1.6rem;
+    margin-bottom: 4px;
+  }
+  .sub {
+    text-align:center;
+    color:#a97ca5;
+    font-size: 0.9rem;
+    margin-bottom: 18px;
+  }
+  .progress-bar {
+    height: 14px;
+    background: #ffe0ee;
+    border-radius: 20px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 2px solid #ffb6d5;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg,#ff9ec3,#ffd39e);
+    width: 0%;
+    transition: width .4s ease;
+  }
+  .card {
+    background: #fffdfb;
+    border-radius: 22px;
+    padding: 22px 20px;
+    box-shadow: 0 8px 20px rgba(230,120,160,0.18);
+    border: 3px solid #ffd6e8;
+  }
+  .qnum {
+    display:inline-block;
+    background:#ff9ec3;
+    color:white;
+    font-weight:bold;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+  }
+  .thai-hint {
+    font-size: 1.02rem;
+    color: #6b4a63;
+    background: #fff5f9;
+    border-left: 5px solid #ffb6d5;
+    padding: 10px 14px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+    line-height: 1.6;
+  }
+  .answer-slot {
+    min-height: 56px;
+    background: #fff9f2;
+    border: 2px dashed #ffcf9e;
+    border-radius: 14px;
+    padding: 10px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 16px;
+    align-items:center;
+  }
+  .answer-slot.shake { animation: shake .4s; border-color:#ff6b6b; background:#fff0f0; }
+  .answer-slot.correct { border-color:#7ed6a5; background:#f2fff6; }
+  @keyframes shake {
+    0%,100% { transform: translateX(0); }
+    20%,60% { transform: translateX(-6px); }
+    40%,80% { transform: translateX(6px); }
+  }
+  .tile {
+    font-size: 1.25rem;
+    padding: 8px 12px;
+    background: linear-gradient(180deg,#ffffff,#fff2f8);
+    border: 2px solid #ffb6d5;
+    border-radius: 12px;
+    cursor: pointer;
+    user-select: none;
+    transition: transform .15s, box-shadow .15s;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.06);
+  }
+  .tile:hover { transform: translateY(-3px); box-shadow: 0 5px 10px rgba(230,120,160,0.25); }
+  .tile.used { opacity: 0.25; cursor: not-allowed; pointer-events:none; }
+  .pool {
+    display:flex; flex-wrap:wrap; gap:8px;
+    padding: 12px;
+    background: #f7f0ff;
+    border-radius: 14px;
+    margin-bottom: 16px;
+    min-height: 60px;
+  }
+  .btn-row { display:flex; gap:10px; flex-wrap:wrap; justify-content:center; }
+  button.action {
+    border:none;
+    padding: 10px 20px;
+    border-radius: 20px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    color: white;
+    transition: transform .15s;
+  }
+  button.action:hover { transform: scale(1.05); }
+  .btn-check { background: linear-gradient(90deg,#7ed6a5,#5cc9c9); }
+  .btn-clear { background: linear-gradient(90deg,#ffb6d5,#ff9ec3); }
+  .btn-next { background: linear-gradient(90deg,#a58cff,#ff9ec3); display:none; }
+  .feedback {
+    text-align:center;
+    font-size: 1rem;
+    margin-top: 12px;
+    min-height: 24px;
+    font-weight: bold;
+  }
+  .feedback.ok { color:#3fae76; }
+  .feedback.no { color:#e05a5a; }
+  .finish {
+    text-align:center;
+    padding: 40px 20px;
+  }
+  .finish h2 { color:#e8598a; }
+  .emoji-big { font-size: 3rem; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>🌸 แบบฝึกเรียงประโยคภาษาจีน 🌸</h1>
+  <div class="sub">แตะตัวอักษรจีนตามลำดับให้ถูกต้องตามความหมายภาษาไทย ✨ เรียงถูกจึงจะไปข้อถัดไปได้นะคะ</div>
+
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="card" id="quizCard"></div>
+</div>
+
+<script>
+const data = [
+  {th:"เงินเดือนปกติของลูกจ้างภายหลังผ่านระยะเวลาทดลองงานกำหนดเป็นเดือนละ 42,000 บาท", zh:"乙方试用期满后的转正工资为每月42,000泰铢。"},
+  {th:"นายจ้างต้องจ่ายค่าจ้างให้แก่ลูกจ้างอย่างครบถ้วนในรูปตัวเงิน โดยโอนผ่านธนาคาร", zh:"甲方以货币形式（银行转账）向乙方足额支付工资。"},
+  {th:"นายจ้างต้องจ่ายค่าจ้างของเดือนก่อนหน้าให้แก่ลูกจ้างอย่างครบถ้วน ภายในวันที่ 5 ของทุกเดือน", zh:"甲方应当在每月5日（含当日）前足额支付乙方上一个月的工资。"},
+  {th:"นายจ้างต้องดำเนินมาตรการอย่างจริงจังเพื่อ คุ้มครองความปลอดภัยและสุขภาพของลูกจ้างในกระบวนการทำงาน", zh:"切实保护乙方在生产过程中的安全与健康。"},
+  {th:"นายจ้างห้ามค้างจ่ายหรือหักค่าจ้างของลูกจ้างโดยไม่มีเหตุอันสมควร", zh:"甲方不得无故拖欠或克扣乙方工资。"},
+  {th:"หากมีการค้างจ่ายค่าจ้าง ลูกจ้างมีสิทธิเลิกสัญญาตาม มาตรา 38 แห่งกฎหมายสัญญาจ้างแรงงานแห่งสาธารณรัฐประชาชนจีน", zh:"如有拖欠，乙方有权依据《中华人民共和国劳动合同法》第三十八条规定解除合同。"},
+  {th:"สำหรับสภาพการทำงานที่เป็นอันตรายต่อ ความปลอดภัยในชีวิตและสุขภาพร่างกาย ลูกจ้างมีสิทธิวิจารณ์ แจ้งเบาะแส และร้องกล่าวหา", zh:"对危害生命安全和身体健康的劳动条件，有权提出批评、检举和控告。"},
+  {th:"และเรียกร้องให้นายจ้างจ่าย ค่าตอบแทนแรงงานให้ครบถ้วน รวมทั้งจ่ายเงินชดเชยทางเศรษฐกิจ", zh:"并要求甲方足额支付劳动报酬及经济补偿金。"},
+  {th:"ลูกจ้างมีสิทธิ ปฏิเสธคำสั่งของนายจ้างที่ฝ่าฝืนกฎหมาย ระเบียบ หรือข้อกำหนดด้านความปลอดภัย", zh:"乙方有权拒绝甲方的违章指挥。"},
+  {th:"นายจ้างต้องจัดให้ลูกจ้างมี สถานที่ทำงาน เครื่องมือ และอุปกรณ์คุ้มครองแรงงานที่จำเป็น ซึ่งสอดคล้องกับมาตรฐานความปลอดภัยในการผลิตแห่งชาติของจีน", zh:"甲方必须为乙方提供符合中国国家安全生产标准的劳动场所、工具及必要的劳动保护用品。"},
+  {th:"เงินเดือนในช่วงทดลองงาน ตั้งแต่วันที่ 1 กันยายน ถึง 30 พฤศจิกายน 2026 กำหนดเป็นเดือนละ 33,600 บาท คิดเป็น 80% ของเงินเดือนปกติ และต้องไม่ต่ำกว่าอัตราค่าจ้างขั้นต่ำในท้องถิ่น", zh:"试用期内（2026年9月1日至11月30日）的工资为每月33,600泰铢（占转正工资的80%，且不低于用人单位所在地最低工资标准）。"},
+  {th:"ในระหว่างอายุสัญญา หากลูกจ้าง เจ็บป่วยหรือได้รับบาดเจ็บที่มิได้เกิดจากการทำงาน ลูกจ้างมีสิทธิได้รับระยะรักษาพยาบาลตามกฎหมาย", zh:"乙方在合同期内患病或非因工负伤，依法享有医疗期。"},
+  {th:"ในระหว่างระยะรักษาพยาบาล นายจ้างจ่าย ค่าจ้างลาป่วยไม่น้อยกว่า 80% ของอัตราค่าจ้างขั้นต่ำในท้องถิ่น", zh:"医疗期内甲方支付病假工资不低于当地最低工资标准的80%。"},
+  {th:"หากวันจ่ายค่าจ้างตรงกับวันหยุดตามกฎหมายหรือวันหยุดประจำสัปดาห์ ต้องจ่ายล่วงหน้าใน วันทำงานที่ใกล้ที่สุด", zh:"如遇法定节假日或休息日，应提前在最近的工作日支付。"},
+  {th:"นายจ้างต้องชำระและนำส่ง เงินสมทบประกันสังคมให้แก่ลูกจ้างตามกฎหมาย", zh:"甲方应当依法为乙方缴纳社会保险费。"},
+  {th:"ลูกจ้างมีสิทธิ ปฏิเสธการที่นายจ้างบังคับให้ปฏิบัติงานที่เสี่ยงอันตราย", zh:"乙方有权拒绝甲方的强令冒险作业。"},
+  {th:"นายจ้างจัดหา อุปกรณ์ที่ได้มาตรฐาน และลูกจ้างต้องสวมใส่และใช้อุปกรณ์ดังกล่าวอย่างถูกต้อง", zh:"甲方提供合格用品，乙方正确佩戴和使用。"}
+];
+
+let current = 0;
+let correctSeq = [];
+let userSeq = []; // indices into pool array
+let poolChars = [];
+let usedFlags = [];
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function updateProgress() {
+  const pct = (current / data.length) * 100;
+  document.getElementById('progressFill').style.width = pct + '%';
+}
+
+function loadQuestion(idx) {
+  const q = data[idx];
+  correctSeq = Array.from(q.zh);
+  // build shuffled pool with original indices, ensure shuffle differs from correct order
+  let order;
+  do {
+    order = shuffle(correctSeq.map((_, i) => i));
+  } while (order.join(',') === correctSeq.map((_, i) => i).join(',') && correctSeq.length > 1);
+
+  poolChars = order.map(i => correctSeq[i]);
+  usedFlags = new Array(poolChars.length).fill(false);
+  userSeq = [];
+
+  const card = document.getElementById('quizCard');
+  card.innerHTML = `
+    <div class="qnum">ข้อที่ ${idx + 1} / ${data.length}</div>
+    <div class="thai-hint">💬 ${q.th}</div>
+    <div class="answer-slot" id="answerSlot"></div>
+    <div class="pool" id="pool"></div>
+    <div class="btn-row">
+      <button class="action btn-check" onclick="checkAnswer()">✅ ตรวจคำตอบ</button>
+      <button class="action btn-clear" onclick="clearAnswer()">🔄 เริ่มใหม่</button>
+      <button class="action btn-next" id="nextBtn" onclick="nextQuestion()">➡️ ข้อถัดไป</button>
+    </div>
+    <div class="feedback" id="feedback"></div>
+  `;
+  renderPool();
+  renderAnswer();
+  updateProgress();
+}
+
+function renderPool() {
+  const pool = document.getElementById('pool');
+  pool.innerHTML = '';
+  poolChars.forEach((ch, i) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile' + (usedFlags[i] ? ' used' : '');
+    tile.textContent = ch;
+    tile.onclick = () => selectTile(i);
+    pool.appendChild(tile);
+  });
+}
+
+function selectTile(i) {
+  if (usedFlags[i]) return;
+  usedFlags[i] = true;
+  userSeq.push(i);
+  renderPool();
+  renderAnswer();
+}
+
+function renderAnswer() {
+  const slot = document.getElementById('answerSlot');
+  slot.className = 'answer-slot';
+  slot.innerHTML = '';
+  userSeq.forEach((i) => {
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.textContent = poolChars[i];
+    tile.onclick = () => removeTile(i);
+    slot.appendChild(tile);
+  });
+}
+
+function removeTile(i) {
+  usedFlags[i] = false;
+  userSeq = userSeq.filter(x => x !== i);
+  renderPool();
+  renderAnswer();
+}
+
+function clearAnswer() {
+  usedFlags = usedFlags.map(() => false);
+  userSeq = [];
+  renderPool();
+  renderAnswer();
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
+}
+
+function checkAnswer() {
+  const feedback = document.getElementById('feedback');
+  const slot = document.getElementById('answerSlot');
+  if (userSeq.length !== correctSeq.length) {
+    feedback.textContent = '📝 ยังเรียงไม่ครบตัวอักษรค่ะ';
+    feedback.className = 'feedback no';
+    return;
+  }
+  const attempt = userSeq.map(i => poolChars[i]).join('');
+  const answer = correctSeq.join('');
+  if (attempt === answer) {
+    feedback.textContent = '🎉 ถูกต้องค่ะ เก่งมาก!';
+    feedback.className = 'feedback ok';
+    slot.classList.add('correct');
+    document.getElementById('nextBtn').style.display = 'inline-block';
+  } else {
+    feedback.textContent = '❌ ยังไม่ถูกนะคะ ลองดูใหม่อีกครั้ง';
+    feedback.className = 'feedback no';
+    slot.classList.add('shake');
+    setTimeout(() => slot.classList.remove('shake'), 400);
+  }
+}
+
+function nextQuestion() {
+  current++;
+  if (current >= data.length) {
+    showFinish();
+  } else {
+    loadQuestion(current);
+  }
+}
+
+function showFinish() {
+  updateProgress();
+  document.getElementById('progressFill').style.width = '100%';
+  const card = document.getElementById('quizCard');
+  card.innerHTML = `
+    <div class="finish">
+      <div class="emoji-big">🏆🌸🎊</div>
+      <h2>เก่งมากค่ะ! ทำครบทุกข้อแล้ว</h2>
+      <p>เรียงประโยคภาษาจีนได้ถูกต้องครบ ${data.length} ข้อ 🎉</p>
+      <button class="action btn-clear" onclick="restartAll()">🔁 เริ่มทำใหม่ตั้งแต่ต้น</button>
+    </div>
+  `;
+}
+
+function restartAll() {
+  current = 0;
+  loadQuestion(current);
+}
+
+loadQuestion(current);
+</script>
+</body>
+</html>
